@@ -65,12 +65,13 @@
      *     display: 'Field Name'
      *     rules: required|matches[password_confirm]
      * }]
+     * @param validateOnSubmit - Boolean - Whether or not the validator should validate the form on submit
      * @param callback - Function - The callback after validation has been performed.
      *     @argument errors - An array of validation errors
      *     @argument event - The javascript event
      */
 
-    var FormValidator = function(formName, fields, callback) {
+    var FormValidator = function(formName, fields, validateOnSubmit, callback) {
         this.callback = callback || defaults.callback;
         this.errors = [];
         this.fields = {};
@@ -104,14 +105,15 @@
         /*
          * Attach an event callback for the form submission
          */
-
-        this.form.onsubmit = (function(that) {
-            return function(event) {
-                try {
-                    return that._validateForm(event);
-                } catch(e) {}
-            }
-        })(this);
+        if (validateOnSubmit) {
+            this.form.onsubmit = (function(that) {
+                return function(event) {
+                    try {
+                        return that._validateForm(event);
+                    } catch(e) {}
+                };
+            })(this);
+        }
     };
 
     /*
@@ -164,7 +166,7 @@
                  * Run through the rules for each field.
                  */
 
-                this._validateField(field);
+                this.validateField(field);
             }
         }
 
@@ -185,11 +187,11 @@
     };
 
     /*
-     * @private
+     * @public
      * Looks at the fields value and evaluates it against the given rules
      */
 
-    FormValidator.prototype._validateField = function(field) {
+    FormValidator.prototype.validateField = function(field) {
         var rules = field.rules.split('|');
 
         /*
